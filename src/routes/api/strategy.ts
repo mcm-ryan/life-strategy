@@ -3,6 +3,43 @@ import { createFileRoute } from '@tanstack/react-router'
 import '@tanstack/react-start'
 import Anthropic from '@anthropic-ai/sdk'
 
+// ---------------------------------------------------------------------------
+// Rate limiting — fixed window, per IP, backed by Redis (ioredis)
+// ---------------------------------------------------------------------------
+import Redis from 'ioredis'
+
+const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+  maxRetriesPerRequest: 1,
+  enableOfflineQueue: false,
+})
+redis.on('error', () => {}) // suppress unhandled error events
+
+const RATE_LIMIT = 3       // max requests per window
+const WINDOW_SECS = 60 * 60  // 1 hour
+
+function getClientIp(request: Request): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+    request.headers.get('x-real-ip') ??
+    'unknown'
+  )
+}
+
+async function isRateLimited(ip: string): Promise<boolean> {
+  const key = `rl:${ip}`
+  try {
+    const count = await redis.incr(key)
+    if (count === 1) {
+      await redis.expire(key, WINDOW_SECS)
+    }
+    return count > RATE_LIMIT
+  } catch {
+    // If Redis is unavailable, fail open so the app stays up
+    console.error('[rate-limit] Redis unavailable, skipping rate limit check')
+    return false
+  }
+}
+
 const SYSTEM_PROMPT = `You are a world-class life coach and strategic advisor. Your role is to create comprehensive, personalized life strategies that help people achieve happiness, health, and wealth simultaneously.
 
 When given information about a person, create a structured, actionable strategy covering these sections:
@@ -81,6 +118,14 @@ export const Route = createFileRoute('/api/strategy')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const ip = getClientIp(request)
+        if (await isRateLimited(ip)) {
+          return new Response(
+            JSON.stringify({ error: 'Too many requests. You can generate up to 3 strategies per hour.' }),
+            { status: 429, headers: { 'Content-Type': 'application/json', 'Retry-After': '3600' } },
+          )
+        }
+
         const apiKey = process.env.ANTHROPIC_API_KEY
         if (!apiKey) {
           return new Response(

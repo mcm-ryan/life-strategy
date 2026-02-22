@@ -133,6 +133,9 @@ function StrategyPage() {
     })
       .then(async (res) => {
         if (!res.ok) {
+          if (res.status === 429) {
+            throw new Error('You\'ve reached the limit of 3 strategies per hour. Please try again later.')
+          }
           const text = await res.text()
           throw new Error(text || `Server error ${res.status}`)
         }
@@ -238,10 +241,7 @@ function StrategyPage() {
             <p className="text-rose-400 font-semibold mb-2">
               Something went wrong
             </p>
-            <p className="text-gray-400 text-sm mb-4">{error}</p>
-            <p className="text-gray-500 text-xs">
-              Make sure ANTHROPIC_API_KEY is set in your environment.
-            </p>
+            <p className="text-gray-400 text-sm">{error}</p>
           </div>
         )}
 
