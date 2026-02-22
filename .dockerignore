@@ -1,0 +1,10 @@
+node_modules
+.output
+.git
+.gitignore
+*.log
+
+# Keep .env.example but never bake real secrets into the image
+.env
+.env.*
+!.env.example
