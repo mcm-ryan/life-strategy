@@ -21,6 +21,9 @@ COPY --from=builder /app/.output ./.output
 
 ENV NODE_ENV=production
 ENV PORT=3000
+# Bun writes its compile cache to $HOME/.cache/bun — set HOME to /tmp so it
+# always has a writable location regardless of the container runtime user.
+ENV HOME=/tmp
 
 EXPOSE 3000
 
