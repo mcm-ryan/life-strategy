@@ -27,6 +27,8 @@ interface FormData {
   // Step 2: Health
   fitnessLevel: string
   sleepHours: string
+  targetWeight: string
+  dailySteps: string
   healthGoals: string
   dietDescription: string
   // Step 3: Interests
@@ -41,6 +43,7 @@ interface FormData {
   // Step 5: Finances
   annualIncome: string
   netWorth: string
+  monthlySavings: string
   financialGoals: string
   financialChallenges: string
   // Step 6: Life Goals
@@ -59,6 +62,8 @@ const initialData: FormData = {
   heightIn: '',
   fitnessLevel: '',
   sleepHours: '',
+  targetWeight: '',
+  dailySteps: '',
   healthGoals: '',
   dietDescription: '',
   hobbies: '',
@@ -70,6 +75,7 @@ const initialData: FormData = {
   careerGoals: '',
   annualIncome: '',
   netWorth: '',
+  monthlySavings: '',
   financialGoals: '',
   financialChallenges: '',
   happinessDefinition: '',
@@ -111,6 +117,7 @@ function QuestionnairePage() {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [data, setData] = useState<FormData>(initialData)
+  const [submitting, setSubmitting] = useState(false)
 
   const set = (field: keyof FormData) => (
     e: React.ChangeEvent<
@@ -119,8 +126,9 @@ function QuestionnairePage() {
   ) => setData((prev) => ({ ...prev, [field]: e.target.value }))
 
   const handleSubmit = () => {
-    sessionStorage.setItem('life-strategy-answers', JSON.stringify(data))
-    navigate({ to: '/strategy' })
+    setSubmitting(true)
+    sessionStorage.setItem('strategy_answers', JSON.stringify(data))
+    void navigate({ to: '/strategy' })
   }
 
   const StepIcon = STEPS[step].icon
@@ -295,6 +303,29 @@ function QuestionnairePage() {
                 />
               </div>
               <div>
+                <Label>Target weight ({data.weightUnit || 'lbs'})</Label>
+                <input
+                  type="number"
+                  className={inputClass()}
+                  placeholder={`e.g. ${data.weightUnit === 'kg' ? '70' : '160'}`}
+                  value={data.targetWeight}
+                  onChange={set('targetWeight')}
+                  min={1}
+                />
+              </div>
+              <div>
+                <Label>Approximate daily steps (current)</Label>
+                <input
+                  type="number"
+                  className={inputClass()}
+                  placeholder="e.g. 5000"
+                  value={data.dailySteps}
+                  onChange={set('dailySteps')}
+                  min={0}
+                  step={500}
+                />
+              </div>
+              <div>
                 <Label>Health goals or concerns</Label>
                 <textarea
                   className={textareaClass()}
@@ -449,6 +480,17 @@ function QuestionnairePage() {
                 </select>
               </div>
               <div>
+                <Label>How much can you currently save/invest per month? (USD)</Label>
+                <input
+                  type="number"
+                  className={inputClass()}
+                  placeholder="e.g. 300"
+                  value={data.monthlySavings}
+                  onChange={set('monthlySavings')}
+                  min={0}
+                />
+              </div>
+              <div>
                 <Label>Financial goals</Label>
                 <textarea
                   className={textareaClass()}
@@ -539,10 +581,11 @@ function QuestionnairePage() {
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-cyan-500/20 hover:scale-105 active:scale-100"
+              onClick={() => void handleSubmit()}
+              disabled={submitting}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-cyan-500/20 hover:scale-105 active:scale-100 disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
             >
-              Generate My Strategy
+              {submitting ? 'Creating...' : 'Generate My Strategy'}
               <ChevronRight className="w-4 h-4" />
             </button>
           )}

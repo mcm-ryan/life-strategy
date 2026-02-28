@@ -10,8 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StrategyRouteImport } from './routes/strategy'
+import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as QuestionnaireRouteImport } from './routes/questionnaire'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StrategyIndexRouteImport } from './routes/strategy.index'
+import { Route as StrategyIdRouteImport } from './routes/strategy.$id'
 import { Route as ApiStrategyRouteImport } from './routes/api/strategy'
 
 const StrategyRoute = StrategyRouteImport.update({
@@ -19,15 +23,35 @@ const StrategyRoute = StrategyRouteImport.update({
   path: '/strategy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuestionnaireRoute = QuestionnaireRouteImport.update({
   id: '/questionnaire',
   path: '/questionnaire',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const StrategyIndexRoute = StrategyIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StrategyRoute,
+} as any)
+const StrategyIdRoute = StrategyIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => StrategyRoute,
 } as any)
 const ApiStrategyRoute = ApiStrategyRouteImport.update({
   id: '/api/strategy',
@@ -37,35 +61,72 @@ const ApiStrategyRoute = ApiStrategyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/questionnaire': typeof QuestionnaireRoute
-  '/strategy': typeof StrategyRoute
+  '/sign-in': typeof SignInRoute
+  '/strategy': typeof StrategyRouteWithChildren
   '/api/strategy': typeof ApiStrategyRoute
+  '/strategy/$id': typeof StrategyIdRoute
+  '/strategy/': typeof StrategyIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/questionnaire': typeof QuestionnaireRoute
-  '/strategy': typeof StrategyRoute
+  '/sign-in': typeof SignInRoute
   '/api/strategy': typeof ApiStrategyRoute
+  '/strategy/$id': typeof StrategyIdRoute
+  '/strategy': typeof StrategyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/questionnaire': typeof QuestionnaireRoute
-  '/strategy': typeof StrategyRoute
+  '/sign-in': typeof SignInRoute
+  '/strategy': typeof StrategyRouteWithChildren
   '/api/strategy': typeof ApiStrategyRoute
+  '/strategy/$id': typeof StrategyIdRoute
+  '/strategy/': typeof StrategyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/questionnaire' | '/strategy' | '/api/strategy'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/questionnaire'
+    | '/sign-in'
+    | '/strategy'
+    | '/api/strategy'
+    | '/strategy/$id'
+    | '/strategy/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/questionnaire' | '/strategy' | '/api/strategy'
-  id: '__root__' | '/' | '/questionnaire' | '/strategy' | '/api/strategy'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/questionnaire'
+    | '/sign-in'
+    | '/api/strategy'
+    | '/strategy/$id'
+    | '/strategy'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/questionnaire'
+    | '/sign-in'
+    | '/strategy'
+    | '/api/strategy'
+    | '/strategy/$id'
+    | '/strategy/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
   QuestionnaireRoute: typeof QuestionnaireRoute
-  StrategyRoute: typeof StrategyRoute
+  SignInRoute: typeof SignInRoute
+  StrategyRoute: typeof StrategyRouteWithChildren
   ApiStrategyRoute: typeof ApiStrategyRoute
 }
 
@@ -78,11 +139,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StrategyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/questionnaire': {
       id: '/questionnaire'
       path: '/questionnaire'
       fullPath: '/questionnaire'
       preLoaderRoute: typeof QuestionnaireRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -91,6 +166,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/strategy/': {
+      id: '/strategy/'
+      path: '/'
+      fullPath: '/strategy/'
+      preLoaderRoute: typeof StrategyIndexRouteImport
+      parentRoute: typeof StrategyRoute
+    }
+    '/strategy/$id': {
+      id: '/strategy/$id'
+      path: '/$id'
+      fullPath: '/strategy/$id'
+      preLoaderRoute: typeof StrategyIdRouteImport
+      parentRoute: typeof StrategyRoute
     }
     '/api/strategy': {
       id: '/api/strategy'
@@ -102,10 +191,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface StrategyRouteChildren {
+  StrategyIdRoute: typeof StrategyIdRoute
+  StrategyIndexRoute: typeof StrategyIndexRoute
+}
+
+const StrategyRouteChildren: StrategyRouteChildren = {
+  StrategyIdRoute: StrategyIdRoute,
+  StrategyIndexRoute: StrategyIndexRoute,
+}
+
+const StrategyRouteWithChildren = StrategyRoute._addFileChildren(
+  StrategyRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
   QuestionnaireRoute: QuestionnaireRoute,
-  StrategyRoute: StrategyRoute,
+  SignInRoute: SignInRoute,
+  StrategyRoute: StrategyRouteWithChildren,
   ApiStrategyRoute: ApiStrategyRoute,
 }
 export const routeTree = rootRouteImport

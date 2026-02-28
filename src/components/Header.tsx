@@ -1,27 +1,44 @@
 import { Link } from '@tanstack/react-router'
-
 import { useState } from 'react'
-import { Home, Menu, X, ClipboardList, Brain } from 'lucide-react'
+import { Home, Menu, X, ClipboardList, Brain, LayoutDashboard } from 'lucide-react'
+import { UserButton, SignInButton, useUser } from '@clerk/clerk-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const { isSignedIn, isLoaded } = useUser()
 
   return (
     <>
-      <header className="p-4 flex items-center bg-slate-900 text-white shadow-lg border-b border-slate-800">
-        <button
-          onClick={() => setIsOpen(true)}
-          className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-          aria-label="Open menu"
-        >
-          <Menu size={24} />
-        </button>
-        <Link to="/" className="ml-4 flex items-center gap-2">
-          <Brain className="w-6 h-6 text-cyan-400" />
-          <span className="text-lg font-bold text-white tracking-tight">
-            Life Strategy<span className="text-cyan-400"> AI</span>
-          </span>
-        </Link>
+      <header className="p-4 flex items-center justify-between bg-slate-900 text-white shadow-lg border-b border-slate-800">
+        <div className="flex items-center">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={24} />
+          </button>
+          <Link to="/" className="ml-4 flex items-center gap-2">
+            <Brain className="w-6 h-6 text-cyan-400" />
+            <span className="text-lg font-bold text-white tracking-tight">
+              Life Strategy<span className="text-cyan-400"> AI</span>
+            </span>
+          </Link>
+        </div>
+
+        {isLoaded && (
+          <div className="flex items-center gap-3">
+            {isSignedIn ? (
+              <UserButton afterSignOutUrl="/" />
+            ) : (
+              <SignInButton mode="modal">
+                <button className="px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg text-sm transition-colors">
+                  Sign In
+                </button>
+              </SignInButton>
+            )}
+          </div>
+        )}
       </header>
 
       <aside
@@ -68,6 +85,20 @@ export default function Header() {
             <ClipboardList size={18} />
             <span className="font-medium">Questionnaire</span>
           </Link>
+          {isSignedIn && (
+            <Link
+              to="/dashboard"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 transition-colors text-gray-300 hover:text-white"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600/20 border border-cyan-600/30 text-cyan-400 transition-colors',
+              }}
+            >
+              <LayoutDashboard size={18} />
+              <span className="font-medium">My Strategies</span>
+            </Link>
+          )}
         </nav>
       </aside>
 
