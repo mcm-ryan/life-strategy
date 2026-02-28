@@ -7,11 +7,12 @@ import {
   Printer,
   Save,
   LayoutDashboard,
+  TrendingUp,
 } from 'lucide-react'
 import { useUser, useClerk } from '@clerk/clerk-react'
 import { useMutation, useConvexAuth } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { inlineMarkdown, renderMarkdown } from '@/lib/markdown'
+import { renderMarkdown } from '@/lib/markdown'
 import { GoalCard, type Goal } from '@/components/GoalCard'
 
 export const Route = createFileRoute('/strategy/')({
@@ -38,7 +39,6 @@ function StrategyPage() {
   const [saving, setSaving] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
-  const hasStartedStreaming = useRef(false)
   const fullTextRef = useRef('')
   const answersRef = useRef<Record<string, string>>({})
   const pendingSaveRef = useRef(false)
@@ -52,9 +52,12 @@ function StrategyPage() {
     }
     answersRef.current = JSON.parse(raw) as Record<string, string>
 
-    if (hasStartedStreaming.current) return
-    hasStartedStreaming.current = true
+    // Reset state so StrictMode's double-invoke starts fresh each time
     setLoading(true)
+    setStreamedText('')
+    setError('')
+    setDone(false)
+    fullTextRef.current = ''
 
     const controller = new AbortController()
 
@@ -114,7 +117,7 @@ function StrategyPage() {
     })()
 
     return () => controller.abort()
-  }, [navigate])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-scroll while streaming
   useEffect(() => {
