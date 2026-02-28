@@ -113,7 +113,7 @@ function Label({ children }: { children: React.ReactNode }) {
   )
 }
 
-function QuestionnairePage() {
+export function QuestionnairePage() {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [data, setData] = useState<FormData>(initialData)
