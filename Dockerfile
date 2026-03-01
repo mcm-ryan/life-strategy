@@ -9,6 +9,10 @@ RUN bun install --frozen-lockfile
 
 # Copy source and build
 COPY . .
+ARG VITE_CONVEX_URL
+ARG VITE_CLERK_PUBLISHABLE_KEY
+ENV VITE_CONVEX_URL=$VITE_CONVEX_URL
+ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
 RUN bun run build
 
 # ── Production stage ───────────────────────────────────────────────────────────
